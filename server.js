@@ -1,6 +1,6 @@
-const express = require("express");
+import express from "express";
 
-const postsRouter = require("./routers/posts.router");
+import { router as postsRouter } from "./routers/posts.router.js";
 
 const PORT = process.env.PORT || 3000;
 

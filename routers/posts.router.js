@@ -1,6 +1,6 @@
-const express = require("express");
+import express from "express";
 
-const controller = require("../controllers/posts.controller");
+import * as controller from "../controllers/posts.controller.js";
 
 const router = express.Router();
 
@@ -12,4 +12,4 @@ router
   .patch("/:postId", controller.updatePost)
   .delete("/:postId", controller.deletePost);
 
-module.exports = router;
+export { router };

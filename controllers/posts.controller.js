@@ -1,4 +1,9 @@
-let POSTS = require("../models/posts.model");
+import fs from "fs";
+import path from "path";
+
+let POSTS = JSON.parse(
+  fs.readFileSync(path.resolve("data", "posts.json"), "utf-8")
+);
 
 const checkId = (req, res, next, value) => {
   if (!Number(value)) {
@@ -76,11 +81,4 @@ const deletePost = (req, res) => {
   res.send();
 };
 
-module.exports = {
-  getPosts,
-  getPost,
-  createPost,
-  updatePost,
-  deletePost,
-  checkId,
-};
+export { getPosts, getPost, createPost, updatePost, deletePost, checkId };
