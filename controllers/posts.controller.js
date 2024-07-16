@@ -1,11 +1,6 @@
-import fs from "fs";
-import path from "path";
+import { Post } from "../models/posts.model.js";
 
-let POSTS = JSON.parse(
-  fs.readFileSync(path.resolve("data", "posts.json"), "utf-8")
-);
-
-const checkId = (req, res, next, value) => {
+const checkId = async (req, res, next, value) => {
   if (!Number(value)) {
     res.status(400).json({
       error: "postId should be a number",
@@ -14,7 +9,7 @@ const checkId = (req, res, next, value) => {
     return;
   }
 
-  const post = POSTS.find(({ id }) => id === +value);
+  const post = await Post.findByPk(+value);
 
   if (!post) {
     res.status(404).json({
@@ -24,19 +19,21 @@ const checkId = (req, res, next, value) => {
     return;
   }
 
-  req.post = post;
+  req.post = post.dataValues;
   next();
 };
 
-const getPosts = (req, res) => {
-  res.json(POSTS);
+const getPosts = async (req, res) => {
+  const posts = await Post.findAll();
+
+  res.json(posts);
 };
 
 const getPost = (req, res) => {
   res.json(req.post);
 };
 
-const createPost = (req, res) => {
+const createPost = async (req, res) => {
   const { title, body } = req.body;
 
   if (!title || !body) {
@@ -46,39 +43,40 @@ const createPost = (req, res) => {
 
     return;
   }
-
-  const newPost = {
+  const newPost = await Post.create({
     title,
     body,
-    userId: 1,
-    id: Math.round(Math.random() * 10000),
-  };
-
-  POSTS.push(newPost);
+    user_id: 1,
+  });
 
   res.status(201).json(newPost);
 };
 
-const updatePost = (req, res) => {
+const updatePost = async (req, res) => {
   const { postId } = req.params;
   const fieldsToUpdate = req.body;
 
-  const updatedPost = {
+  const values = {
     ...req.post,
     ...fieldsToUpdate,
   };
 
-  POSTS = POSTS.map((post) => (post.id === +postId ? updatedPost : post));
+  await Post.update(
+    { title: values.title, body: values.body, user_id: values.user_id },
+    { where: { id: values.id } }
+  );
+
+  const updatedPost = await Post.findByPk(+postId);
 
   res.status(200).json(updatedPost);
 };
 
-const deletePost = (req, res) => {
+const deletePost = async (req, res) => {
   const { postId } = req.params;
 
-  POSTS = POSTS.filter(({ id }) => id !== +postId);
+  await Post.destroy({ where: { id: +postId } });
 
   res.send();
 };
 
-export { getPosts, getPost, createPost, updatePost, deletePost, checkId };
+export { getPosts, getPost, createPost, deletePost, updatePost, checkId };
